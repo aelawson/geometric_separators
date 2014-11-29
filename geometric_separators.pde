@@ -26,17 +26,49 @@ void setup() {
 
 // On mouse press
 void mousePressed() {
+  // If mouse presses reset button
   if ((mouseX >= reset_x && mouseX <= (reset_x + reset_w)) &&
     (mouseY >= reset_y && mouseY <= (reset_y + reset_h))) {
     // Reset input and background
     input.clear();
+  }
+  // If mouse presses calculate button
+  else if ((mouseX >= reset_x && mouseX <= (reset_x + reset_w)) &&
+    (mouseY >= reset_y && mouseY <= (reset_y + reset_h))) {
+    // Get sorted input points
   }
   else {
     PShape new_ellipse = createShape(ELLIPSE, mouseX - 12.5, mouseY - 12.5, 25, 25);
     input.add(new_ellipse);
   }
   redraw();
-} 
+}
+
+// Estimate centerpoint
+void approxCenter(ArrayList<PShape> input) {
+  if (input.size() == 1) {
+    return ArrayList.get(0);
+  }
+  else {
+    // Sample points
+    
+  }
+}
+
+// Estimate the geometric median - dynamic programming
+void geomMedian() {
+  // Memoization hash tables
+  HashMap<Double> left = new HashMap<Double>():
+  HashMap<Double> right = new HashMap<Double>():
+  HashMap<Double> up = new HashMap<Double>():
+  HashMap<Double> down = new HashMap<Double>():
+  // Sum of squares values
+  ArrayList<Double> leftSq = new ArrayList<Double>();
+  ArrayList<Double> rightSq = new ArrayList<Double>();
+  for (PShape circle : inputSorted) {
+    
+  } 
+}
 
 // Draw
 void draw() {
@@ -47,6 +79,6 @@ void draw() {
   text("Calculate.", calc_x + 25, calc_y - 10);
   for (PShape ellipse : input) {
     shape(ellipse);
-    fill(0);
+    fill(255);
   }
 }
