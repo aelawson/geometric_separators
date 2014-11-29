@@ -1,9 +1,9 @@
-// Reset Button
+// Reset button coordinates
 int reset_x = 100;
 int reset_y = 450;
 int reset_w = 100;
 int reset_h = 25;
-// Calculate Button
+// Calculate button coordinates
 int calc_x = 250;
 int calc_y = 450;
 int calc_w = 100;
@@ -74,8 +74,9 @@ void draw() {
   background(255);
   shape(reset);
   shape(calculate);
-  text("Reset.", reset_x + 25, reset_y - 10);
-  text("Calculate.", calc_x + 25, calc_y - 10);
+  fill(50);
+  text("Reset.", reset_x + 30, reset_y + 15);
+  text("Calculate.", calc_x + 25, calc_y + 15);
   for (PVector point : input) {
     strokeWeight(4);
     point(point.x, point.y);
