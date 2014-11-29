@@ -44,6 +44,31 @@ void mousePressed() {
   redraw();
 }
 
+// Estimate centerpoint
+void approxCenter(ArrayList<PShape> input) {
+  if (input.size() == 1) {
+    // Do nothing
+  }
+  else {
+    // Sample points
+    
+  }
+}
+
+// Estimate the geometric median - dynamic programming
+void geomMedian() {
+  // Memoization hash tables
+  HashMap<String, Double> left = new HashMap<String, Double>();
+  HashMap<String, Double> right = new HashMap<String, Double>();
+  HashMap<String, Double> up = new HashMap<String, Double>();
+  HashMap<String, Double> down = new HashMap<String, Double>();
+  // Sum of squares values
+  ArrayList<Double> leftSq = new ArrayList<Double>();
+  ArrayList<Double> rightSq = new ArrayList<Double>();
+  ArrayList<Double> upSq = new ArrayList<Double>();
+  ArrayList<Double> downSq = new ArrayList<Double>();
+}
+
 // Draw
 void draw() {
   background(255);
