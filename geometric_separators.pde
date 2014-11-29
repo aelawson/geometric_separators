@@ -65,9 +65,8 @@ void geomMedian() {
   // Sum of squares values
   ArrayList<Double> leftSq = new ArrayList<Double>();
   ArrayList<Double> rightSq = new ArrayList<Double>();
-  for (PShape circle : inputSorted) {
-    
-  } 
+  ArrayList<Double> upSq = new ArrayList<Double>();
+  ArrayList<Double> downSq = new ArrayList<Double>();
 }
 
 // Draw
