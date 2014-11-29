@@ -77,7 +77,7 @@ void draw() {
   text("Reset.", reset_x + 25, reset_y - 10);
   text("Calculate.", calc_x + 25, calc_y - 10);
   for (PVector point : input) {
-    point(point.x, point.y);
     strokeWeight(4);
+    point(point.x, point.y);
   }
 }
