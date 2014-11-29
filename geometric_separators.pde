@@ -1,11 +1,11 @@
 // Reset button coordinates
-int reset_x = 100;
-int reset_y = 450;
+int reset_x = 140;
+int reset_y = 460;
 int reset_w = 100;
 int reset_h = 25;
 // Calculate button coordinates
 int calc_x = 250;
-int calc_y = 450;
+int calc_y = 460;
 int calc_w = 100;
 int calc_h = 25;
 // Button Shapes
