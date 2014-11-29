@@ -12,7 +12,7 @@ int calc_h = 25;
 PShape reset;
 PShape calculate;
 // Input list
-ArrayList<PShape> input = new ArrayList<PShape>();
+ArrayList<PVector> input = new ArrayList<PVector>();
 
 // Setup
 void setup() {
@@ -38,8 +38,8 @@ void mousePressed() {
     // Get sorted input points
   }
   else {
-    PShape new_ellipse = createShape(ELLIPSE, mouseX - 12.5, mouseY - 12.5, 25, 25);
-    input.add(new_ellipse);
+    PVector new_point = new PVector(mouseX, mouseY);
+    input.add(new_point);
   }
   redraw();
 }
@@ -76,8 +76,8 @@ void draw() {
   shape(calculate);
   text("Reset.", reset_x + 25, reset_y - 10);
   text("Calculate.", calc_x + 25, calc_y - 10);
-  for (PShape ellipse : input) {
-    shape(ellipse);
-    fill(255);
+  for (PVector point : input) {
+    strokeWeight(4);
+    point(point.x, point.y);
   }
 }
