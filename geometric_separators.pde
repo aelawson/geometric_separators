@@ -47,7 +47,7 @@ void mousePressed() {
 // Estimate centerpoint
 void approxCenter(ArrayList<PShape> input) {
   if (input.size() == 1) {
-    return ArrayList.get(0);
+    // Do nothing
   }
   else {
     // Sample points
@@ -58,10 +58,10 @@ void approxCenter(ArrayList<PShape> input) {
 // Estimate the geometric median - dynamic programming
 void geomMedian() {
   // Memoization hash tables
-  HashMap<Double> left = new HashMap<Double>():
-  HashMap<Double> right = new HashMap<Double>():
-  HashMap<Double> up = new HashMap<Double>():
-  HashMap<Double> down = new HashMap<Double>():
+  HashMap<String, Double> left = new HashMap<String, Double>();
+  HashMap<String, Double> right = new HashMap<String, Double>();
+  HashMap<String, Double> up = new HashMap<String, Double>();
+  HashMap<String, Double> down = new HashMap<String, Double>();
   // Sum of squares values
   ArrayList<Double> leftSq = new ArrayList<Double>();
   ArrayList<Double> rightSq = new ArrayList<Double>();
