@@ -1,24 +1,21 @@
 import java.util.*;
 
-// Reset button coordinates
 int reset_x = 140;
 int reset_y = 460;
 int reset_w = 100;
 int reset_h = 25;
-// Calculate button coordinates
+
 int calc_x = 250;
 int calc_y = 460;
 int calc_w = 100;
 int calc_h = 25;
-// Button Shapes
+
 PShape reset;
 PShape calculate;
-// Input lists
-ArrayList<PVector> input = new ArrayList<PVector>();
+ArrayList<PVector> rawInput = new ArrayList<PVector>();
 ArrayList<Float> inputX, inputY;
-// Misc
-Comparator pointComparator;
-// Setup
+Comparator pointComp, pointCompReverse;
+
 void setup() {
   background(255);
   size(500,500,P2D);
@@ -27,12 +24,25 @@ void setup() {
   calculate = createShape(RECT, calc_x, calc_y, calc_w, calc_h);
   noLoop();
   // Define new comparator
-	pointComparator = new Comparator<Float>() {
+	pointComp = new Comparator<Float>() {
 		public int compare(Float p1, Float p2) {
 			if (p1 < p2) {
 				return -1;
 			}
 			else if (p2 < p1) {
+				return 1;
+			}
+			else {
+				return 0;
+			}
+		}
+	};
+	pointCompReverse = new Comparator<Float>() {
+		public int compare(Float p1, Float p2) {
+			if (p1 > p2) {
+				return -1;
+			}
+			else if (p2 > p1) {
 				return 1;
 			}
 			else {
@@ -48,7 +58,7 @@ void mousePressed() {
   if ((mouseX >= reset_x && mouseX <= (reset_x + reset_w)) &&
 	(mouseY >= reset_y && mouseY <= (reset_y + reset_h))) {
 	// Reset input and background
-	input.clear();
+	rawInput.clear();
   }
   // If mouse presses calculate button
   else if ((mouseX >= calc_x && mouseX <= (calc_x + calc_w)) &&
@@ -56,17 +66,14 @@ void mousePressed() {
 		// Build component lists
 		inputX = new ArrayList<Float>();
 		inputY = new ArrayList<Float>();
-		for (PVector point : input) {
+		for (PVector point : rawInput) {
 			inputX.add(point.x);
 			inputY.add(point.y);
-	}
-	// Sort lists
-	Collections.sort(inputX, pointComparator);
-	Collections.sort(inputY, pointComparator);
+		}
   }
   else {
-	PVector new_point = new PVector(mouseX, mouseY);
-	input.add(new_point);
+		PVector new_point = new PVector(mouseX, mouseY);
+		rawInput.add(new_point);
   }
   redraw();
 }
@@ -83,18 +90,18 @@ void approxCenter(ArrayList<PShape> input) {
 
 // Estimate the geometric median - dynamic programming
 void geomMedian() {
-	// Nothing yet
+
 }
 
 // Calculate the distance with the input, memoization
 float calcDist(float point, ArrayList<Float> input) {
-		int dist = point - prevPoint;
-		// For each point before i, calculate distance to i
-		for (int j = 0; j < i; j++) {
-			float prevPoint = input.get(j);
-			sum += currentPoint - prevPoint;
-		}
-		return sum;
+	int dist = point - prevPoint;
+	// For each point before i, calculate distance to i
+	for (int j = 0; j < i; j++) {
+		float prevPoint = input.get(j);
+		sum += currentPoint - prevPoint;
+	}
+	return sum;
 }
 
 // Calculate last sum and its distance from i
@@ -129,14 +136,22 @@ float getSums(ArrayList<Float> input) {
 		sum, dist = calcLastSum(i, input, sumSquaresMemoize);
 		sumSquaresMemoize.put(i + 1, sum + (i * Math.pow(d, 2)) + (2 * i * dist));
 	}
-	// Sum results for input
-	float sum = 0;
-	float sumSquares = 0;
-	for (int i = 0; i < input.size(); i++) {
-		sum += sumMemoize.get(i);
-		sumSquares += sumSquaresMemoize.get(i);
+	return sumSquaresMemoize;
+}
+
+// Get minimum point for given axis input
+float getAxisMin(ArrayList<Float> input) {
+	ArrayList<Float> totalSumSquares;
+	HashMap<Integer, Float> sumSquaresOne, sumSquaresTwo;
+	Collections.sort(input, pointComp);
+	sumSquaresOne = getSums(input);
+	Collections.sort(input, pointCompReverse);
+	sumSquaresTwo = getSums(input);
+	// Calculate total sum and store it
+	for (int i = 0; i < sumSquaresOne.size(); i++) {
+		totalSumSquares.add(i, sumSquaresOne.get(i) + sumSquaresTwo.get(i));
 	}
-	return sum, sumSquares;
+	return Collections.min(totalSumSquares);
 }
 
 // Draw
@@ -148,7 +163,7 @@ void draw() {
   text("Reset.", reset_x + 30, reset_y + 15);
   text("Calculate.", calc_x + 25, calc_y + 15);
   for (PVector point : input) {
-	strokeWeight(4);
-	point(point.x, point.y);
+		strokeWeight(4);
+		point(point.x, point.y);
   }
 }
