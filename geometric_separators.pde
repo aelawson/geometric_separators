@@ -1,4 +1,6 @@
 import java.util.*;
+import java.util.Map.*;
+import java.lang.Boolean;
 
 int reset_x = 140;
 int reset_y = 460;
@@ -12,10 +14,23 @@ int calc_h = 25;
 
 PShape reset;
 PShape calculate;
+PVector centerPoint;
 ArrayList<PVector> rawInput = new ArrayList<PVector>();
-ArrayList<Float> inputX, inputY;
-Comparator pointComp, pointCompReverse;
+Comparator<PVector> compareX, compareXRev, compareY, compareYRev;
 
+// Triple used for returning three items
+private class ReturnTriple {
+	public float sum;
+	public float dist;
+	public HashMap<PVector, Float> memoize;
+	public ReturnTriple(float sum, float dist, HashMap<PVector, Float> memoize) {
+		this.sum = sum;
+		this.dist = dist;
+		this.memoize = memoize;
+	}
+}
+
+// Setup
 void setup() {
   background(255);
   size(500,500,P2D);
@@ -23,13 +38,12 @@ void setup() {
   reset = createShape(RECT, reset_x, reset_y, reset_w, reset_h);
   calculate = createShape(RECT, calc_x, calc_y, calc_w, calc_h);
   noLoop();
-  // Define new comparator
-	pointComp = new Comparator<Float>() {
-		public int compare(Float p1, Float p2) {
-			if (p1 < p2) {
+  compareX = new Comparator<PVector>() {
+		public int compare(PVector p1, PVector p2) {
+			if (p1.x < p2.x) {
 				return -1;
 			}
-			else if (p2 < p1) {
+			else if (p2.x < p1.x) {
 				return 1;
 			}
 			else {
@@ -37,12 +51,38 @@ void setup() {
 			}
 		}
 	};
-	pointCompReverse = new Comparator<Float>() {
-		public int compare(Float p1, Float p2) {
-			if (p1 > p2) {
+  compareXRev = new Comparator<PVector>() {
+		public int compare(PVector p1, PVector p2) {
+			if (p1.x > p2.x) {
 				return -1;
 			}
-			else if (p2 > p1) {
+			else if (p2.x > p1.x) {
+				return 1;
+			}
+			else {
+				return 0;
+			}
+		}
+	};
+	compareY = new Comparator<PVector>() {
+		public int compare(PVector p1, PVector p2) {
+			if (p1.y < p2.y) {
+				return -1;
+			}
+			else if (p2.y < p1.y) {
+				return 1;
+			}
+			else {
+				return 0;
+			}
+		}
+	};
+	compareYRev = new Comparator<PVector>() {
+		public int compare(PVector p1, PVector p2) {
+			if (p1.y > p2.y) {
+				return -1;
+			}
+			else if (p2.y > p1.y) {
 				return 1;
 			}
 			else {
@@ -57,19 +97,19 @@ void mousePressed() {
   // If mouse presses reset button
   if ((mouseX >= reset_x && mouseX <= (reset_x + reset_w)) &&
 	(mouseY >= reset_y && mouseY <= (reset_y + reset_h))) {
-	// Reset input and background
-	rawInput.clear();
+		// Reset input and background
+		rawInput.clear();
+		centerPoint = null;
   }
   // If mouse presses calculate button
   else if ((mouseX >= calc_x && mouseX <= (calc_x + calc_w)) &&
 	(mouseY >= calc_y && mouseY <= (calc_y + calc_h))) {
-		// Build component lists
-		inputX = new ArrayList<Float>();
-		inputY = new ArrayList<Float>();
-		for (PVector point : rawInput) {
-			inputX.add(point.x);
-			inputY.add(point.y);
-		}
+  	// Run algorithm
+  	centerPoint = approxCenterpoint(rawInput);
+  	if (centerPoint != null) {
+	  	System.out.println("x-coordinate: " + Float.toString(centerPoint.x));
+	    System.out.println("y-coordinate: " + Float.toString(centerPoint.y));
+	  }
   }
   else {
 		PVector new_point = new PVector(mouseX, mouseY);
@@ -78,80 +118,138 @@ void mousePressed() {
   redraw();
 }
 
-// Estimate centerpoint
-void approxCenter(ArrayList<PShape> input) {
-  if (input.size() == 1) {
-		// Do nothing
+// Get geometric median
+PVector getGeometricMedian(ArrayList<PVector> input) {
+	if (input.size() == 0) {
+		return null;
+	}
+  else if (input.size() == 1) {
+		return input.get(0);
   }
   else {
-  	// Do nothing
+  	// Get the point
+  	float x = getAxisMin(input, false);
+  	float y = getAxisMin(input, true);
+  	return new PVector(x, y);
   }
 }
 
-// Estimate the geometric median - dynamic programming
-void geomMedian() {
-
+// Approximate the centerpoint
+PVector approxCenterpoint(ArrayList<PVector> input) {
+	PVector point = getGeometricMedian(input);
+	if (point == null) {
+		System.out.println("You don't have any input points!");
+		return null;
+	}
+	else {
+		return point;
+	}
 }
 
 // Calculate the distance with the input, memoization
-float calcDist(float point, ArrayList<Float> input) {
-	int dist = point - prevPoint;
+float calcDist(int i, PVector currentPoint, ArrayList<PVector> input, boolean isY) {
 	// For each point before i, calculate distance to i
+	PVector prevPoint;
+	float sum = 0;
 	for (int j = 0; j < i; j++) {
-		float prevPoint = input.get(j);
-		sum += currentPoint - prevPoint;
+		prevPoint = input.get(j);
+		if (isY) {
+			sum += currentPoint.y - prevPoint.y;
+		}
+		else {
+			sum += currentPoint.x - prevPoint.x;
+		}
 	}
 	return sum;
 }
 
-// Calculate last sum and its distance from i
-float calcLastSum(int i, ArrayList<Float> input, HashMap<Integer, Float> memoize) {
+// Calculate prev sum (i - 1) and the point distance from i
+ReturnTriple calcLastSum(int i, PVector currentPoint, PVector nextPoint, ArrayList<PVector> input, HashMap<PVector, Float> memoize, boolean isY) {
 	// Calculate for squares
-	float sum;
+	float sum, dist;
 	// If possible, reuse solution
-	if (memoize.contains(i)) {
-		sum = memoize.get(i);
+	if (memoize.containsKey(currentPoint)) {
+		sum = memoize.get(currentPoint);
 	}
 	// Otherwise, calculate
 	else {
-		sum = calcDist(currentPoint, input);
+		sum = calcDist(i, currentPoint, input, isY);
+		memoize.put(currentPoint, sum);
 	}
-	float currentPoint = input.get(i);
-	float nextPoint = input.get(i + 1);
-	float dist = nextPoint - currentPoint;
-	return sum, dist;
+	if (isY) {
+		dist = nextPoint.y - currentPoint.y;
+	}
+	else {
+		dist = nextPoint.x - currentPoint.x;
+	}
+	return new ReturnTriple(sum, dist, memoize);
 }
 
 // Get sums and sums of squares of distances for an input
-float getSums(ArrayList<Float> input) {
+HashMap<PVector, Float> getSums(ArrayList<PVector> input, boolean isY) {
   // Memoization hash tables
-  HashMap<Integer, Float> sumMemoize = new HashMap<Integer, Float>();
-  HashMap<Integer, Float> sumSquaresMemoize = new HashMap<Integer, Float>();
+  HashMap<PVector, Float> sumMemoize = new HashMap<PVector, Float>();
+  HashMap<PVector, Float> sumSquaresMemoize = new HashMap<PVector, Float>();
+  ReturnTriple returnTriple = new ReturnTriple(0, 0, null);
+  PVector currentPoint, nextPoint;
+ 	float sum, dist;
 	for (int i = 0; i < input.size() - 1; i++) {
-		float sum, dist;
+		currentPoint = input.get(i);
+		nextPoint = input.get(i + 1);
 		// Calculate sum
-		sum, dist = calcLastSum(i, input, sumMemoize);
-		sumMemoize.put(i + 1, sum + (i * dist));
+		returnTriple = calcLastSum(i, currentPoint, nextPoint, input, sumMemoize, isY);
+		sumMemoize = returnTriple.memoize;
+		sumMemoize.put(nextPoint, returnTriple.sum + (i * returnTriple.dist));
 		// Calculate sum of squares
-		sum, dist = calcLastSum(i, input, sumSquaresMemoize);
-		sumSquaresMemoize.put(i + 1, sum + (i * Math.pow(d, 2)) + (2 * i * dist));
+		returnTriple = calcLastSum(i, currentPoint, nextPoint, input, sumSquaresMemoize, isY);
+		sumSquaresMemoize = returnTriple.memoize;
+		sumSquaresMemoize.put(nextPoint, returnTriple.sum + (float)(i * Math.pow(returnTriple.dist, 2)) + (2 * i * returnTriple.dist));
 	}
+ 	System.out.println("Printing dict...");
+ 	System.out.println(sumSquaresMemoize);
 	return sumSquaresMemoize;
 }
 
 // Get minimum point for given axis input
-float getAxisMin(ArrayList<Float> input) {
-	ArrayList<Float> totalSumSquares;
-	HashMap<Integer, Float> sumSquaresOne, sumSquaresTwo;
-	Collections.sort(input, pointComp);
-	sumSquaresOne = getSums(input);
-	Collections.sort(input, pointCompReverse);
-	sumSquaresTwo = getSums(input);
-	// Calculate total sum and store it
-	for (int i = 0; i < sumSquaresOne.size(); i++) {
-		totalSumSquares.add(i, sumSquaresOne.get(i) + sumSquaresTwo.get(i));
+Float getAxisMin(ArrayList<PVector> input, boolean isY) {
+	HashMap<PVector, Float> sumSquaresLeft, sumSquaresRight;
+	HashMap<PVector, Float> totalSumSquares = new HashMap<PVector, Float>();
+	// Get left distances
+	if (isY) {
+		Collections.sort(input, compareY);
 	}
-	return Collections.min(totalSumSquares);
+	else {
+		Collections.sort(input, compareX);
+	}
+	sumSquaresLeft = getSums(input, isY);
+	System.out.println(sumSquaresLeft);
+	// Get right distances
+	if (isY) {
+		Collections.sort(input, compareYRev);
+	}
+	else {
+		Collections.sort(input, compareXRev);
+	}
+	sumSquaresRight = getSums(input, isY);
+	System.out.println(sumSquaresRight);
+	// Calculate total sum and store it
+	for (int i = 0; i < sumSquaresLeft.size(); i++) {
+		PVector point = input.get(i);
+		totalSumSquares.put(point, sumSquaresLeft.get(point) + sumSquaresRight.get(point));
+	}
+	ArrayList<Entry<PVector, Float>> sortedList = new ArrayList<Entry<PVector, Float>>(totalSumSquares.entrySet());
+	Collections.sort(sortedList, new Comparator<Entry<PVector, Float>>() {
+		public int compare(Entry<PVector, Float> entry1, Entry<PVector, Float> entry2) {
+			return (int)(entry1.getValue() - entry2.getValue());
+		}
+	});
+	// Return final point coordinate
+	if (isY) {
+		return sortedList.get(0).getKey().y;
+	}
+	else {
+		return sortedList.get(0).getKey().x;
+	}
 }
 
 // Draw
@@ -160,10 +258,20 @@ void draw() {
   shape(reset);
   shape(calculate);
   fill(50);
+  textSize(20);
+  text("Geometric Separators", 140, 20);
+  textSize(12);
   text("Reset.", reset_x + 30, reset_y + 15);
   text("Calculate.", calc_x + 25, calc_y + 15);
-  for (PVector point : input) {
+  // Draw input
+  for (PVector point : rawInput) {
 		strokeWeight(4);
 		point(point.x, point.y);
+  }
+  // Draw center point
+  if (centerPoint != null) {
+  	strokeWeight(6);
+  	fill (255, 0, 0);
+  	point(centerPoint.x, centerPoint.y);
   }
 }
