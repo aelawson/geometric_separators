@@ -134,15 +134,52 @@ PVector getGeometricMedian(ArrayList<PVector> input) {
   }
 }
 
+// Sample input points into sets of 4
+ArrayList<Set<PVector>> samplePoints(ArrayList<PVector> input) {
+	ArrayList<Set> setList = new ArrayList<Set<PVector>>();
+	Set<PVector> pointSet = new Set<PVector>();
+	// While there are still points, split into sets
+	while (input.size() > 0) {
+		int rnd = new Random().nextInt();
+		int index = (rnd * (input.size()));
+		// Add to set
+		pointSet.add(input.get(index));
+		// Create new set on max size
+		if (pointSet.size() == 4) {
+			setList.add(pointSet);
+			pointSet = new Set<PVector>();
+		}
+	}
+	// Add most recent unempty set to list
+	if (pointSet.size() > 0) {
+		setList.add(pointSet)
+	}
+	return setList;
+}
+
 // Approximate the centerpoint
 PVector approxCenterpoint(ArrayList<PVector> input) {
-	PVector point = getGeometricMedian(input);
-	if (point == null) {
+	if (input.size() == 0) {
 		System.out.println("You don't have any input points!");
-		return null;
 	}
 	else {
-		return point;
+		// Algorithm
+		// Repeat 1 - 3 until one point remains and return that point
+		while (input.size > 1) {
+			// 1. Sample points into groups of 4
+			ArrayList<Set<PVector>> setList = samplePoints(input);
+			// 2. Compute radon point of each group (geometric median)
+			ArrayList<PVector> radonList = new ArrayList<PVector>();
+			for (Set<PVector> set : setList) {
+				PVector radonPoint = getGeometricMedian(input);
+				else {
+					radonList.add(radonPoint);
+				}
+				// 3. Set input to be new radon points
+				input = radonList;
+			}
+		}
+		return input.get(0);
 	}
 }
 
