@@ -83,36 +83,60 @@ void approxCenter(ArrayList<PShape> input) {
 
 // Estimate the geometric median - dynamic programming
 void geomMedian() {
-  // Memoization hash tables
-  HashMap<Integer, Float> xMemoize = new HashMap<Integer, Float>();
-  HashMap<Integer, Float> yMemoize = new HashMap<Integer, Float>();
-  // Calculate for x-axis
-  // For each point
-	for (int i = 0; i < inputX.size(); i++) {
-		float currentPoint = inputX.get(i);
-	  ArrayList<Double> leftSquares = new ArrayList<Double>();
-	  ArrayList<Double> rightSquares = new ArrayList<Double>();
-	  ArrayList<Double> upSquares = new ArrayList<Double>();
-	  ArrayList<Double> downSquares = new ArrayList<Double>();
-	  // Get distance to every previous point
-	}
+	// Nothing yet
 }
 
 // Calculate the distance with the input, memoization
-void calcDist(float point, ArrayList<Float> input, HashMap<Integer, Float> memoize) {
-	if (memoize.contains(currentPoint)) {
-		// Reuse solution
-		return memoize.get(currentPoint);
-	}
-	else {
+float calcDist(float point, ArrayList<Float> input) {
 		int dist = point - prevPoint;
+		// For each point before i, calculate distance to i
 		for (int j = 0; j < i; j++) {
 			float prevPoint = input.get(j);
 			sum += currentPoint - prevPoint;
 		}
-		memoize.put(currentPoint, sum);
 		return sum;
+}
+
+// Calculate last sum and its distance from i
+float calcLastSum(int i, ArrayList<Float> input, HashMap<Integer, Float> memoize) {
+	// Calculate for squares
+	float sum;
+	// If possible, reuse solution
+	if (memoize.contains(i)) {
+		sum = memoize.get(i);
 	}
+	// Otherwise, calculate
+	else {
+		sum = calcDist(currentPoint, input);
+	}
+	float currentPoint = input.get(i);
+	float nextPoint = input.get(i + 1);
+	float dist = nextPoint - currentPoint;
+	return sum, dist;
+}
+
+// Get sums and sums of squares of distances for an input
+float getSums(ArrayList<Float> input) {
+  // Memoization hash tables
+  HashMap<Integer, Float> sumMemoize = new HashMap<Integer, Float>();
+  HashMap<Integer, Float> sumSquaresMemoize = new HashMap<Integer, Float>();
+	for (int i = 0; i < input.size() - 1; i++) {
+		float sum, dist;
+		// Calculate sum
+		sum, dist = calcLastSum(i, input, sumMemoize);
+		sumMemoize.put(i + 1, sum + (i * dist));
+		// Calculate sum of squares
+		sum, dist = calcLastSum(i, input, sumSquaresMemoize);
+		sumSquaresMemoize.put(i + 1, sum + (i * Math.pow(d, 2)) + (2 * i * dist));
+	}
+	// Sum results for input
+	float sum = 0;
+	float sumSquares = 0;
+	for (int i = 0; i < input.size(); i++) {
+		sum += sumMemoize.get(i);
+		sumSquares += sumSquaresMemoize.get(i);
+	}
+	return sum, sumSquares;
 }
 
 // Draw
