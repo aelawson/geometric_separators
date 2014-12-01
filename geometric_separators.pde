@@ -14,6 +14,7 @@ int calc_h = 25;
 
 PShape reset;
 PShape calculate;
+PShape sphere;
 PVector centerPoint;
 ArrayList<PVector> rawInput = new ArrayList<PVector>();
 Comparator<PVector> compareX, compareXRev, compareY, compareYRev;
@@ -112,14 +113,19 @@ void mousePressed() {
 	 }
   }
   else {
-		PVector new_point = new PVector(mouseX, mouseY);
-		rawInput.add(new_point);
+        // Create new 2D point from mouse coordinates
+		PVector prelim_point = new PVector(mouseX, mouseY);
+        // Lift to 3D with the squared magnitude of the original point
+        PVector final_point = new PVector(prelim_point.x, prelim_point.y,
+            (float)Math.pow(prelim_point.mag(), 2))
+		rawInput.add(final_point);
   }
   redraw();
 }
 
 // Get geometric separator
 PShape getSeparator() {
+    // Algorithm
     // 1. Get centerpoint
     PVector centerPoint = approxCenterpoint(rawInput);
     // 2. Get random unit vector in 3D
@@ -127,13 +133,23 @@ PShape getSeparator() {
     // 3. Get radius
     float radius = getRadius(centerPoint, unitVector);
     // 4. Output sphere separator
-
+    float[4] sphereAttributes = getSphereAttr(centerPoint, unitVector, radius);
+    sphere = createShape(ELLIPSE, sphereAttributes);
 }
 
-// Get radius
+// Get radius for our separator
 float getRadius(PVector centerPoint, PVector unitVector) {
     float num = (float)Math.sqrt(centerPoint.z - centerPoint.mag());
     return num / Math.abs(unitVector.z);
+}
+
+float[] getSphereAttr(PVector centerPoint, PVector unitVector, float radius) {
+    PVector center = centerPoint.sub(unitVector.mult(radius));
+    float x = center.x - radius;
+    float y = center.y - radius;
+    float z = center.z - radius;
+    float[4] attributes = {x, y, 2 * radius, 2 * radius};
+    return attributes;
 }
 
 // Get geometric median
@@ -312,12 +328,17 @@ void draw() {
   text("Calculate.", calc_x + 25, calc_y + 15);
   // Draw input
   for (PVector point : rawInput) {
-		strokeWeight(4);
-		point(point.x, point.y);
+	   strokeWeight(4);
+	   point(point.x, point.y);
   }
   // Draw center point
   if (centerPoint != null) {
-	strokeWeight(6);
-	point(centerPoint.x, centerPoint.y);
+	   strokeWeight(6);
+	   point(centerPoint.x, centerPoint.y);
+  }
+  // Draw separator sphere projected to 2D
+  if (sphere != null) {
+        strokeWeight(6);
+        shape(sphere);
   }
 }
