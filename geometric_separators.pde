@@ -129,9 +129,20 @@ PVector getGeometricMedian(ArrayList<PVector> input) {
 	}
 	else {
 		// Get the point
-		float x = getAxisMin(input, false);
-		float y = getAxisMin(input, true);
-		return new PVector(x, y);
+        HashMap<PVector, Float> total = new HashMap<PVector, Float>();
+		HashMap<PVector, Float> x = getAxisMin(input, false);
+		HashMap<PVector, Float> y = getAxisMin(input, true);
+        Set<PVector> keys = x.keySet();
+        for (PVector key : keys) {
+            total.put(key, x.get(key) + y.get(key));
+        }
+        ArrayList<Entry<PVector, Float>> sortedList = new ArrayList<Entry<PVector, Float>>(total.entrySet());
+        Collections.sort(sortedList, new Comparator<Entry<PVector, Float>>() {
+         public int compare(Entry<PVector, Float> entry1, Entry<PVector, Float> entry2) {
+             return (int)(entry1.getValue() - entry2.getValue());
+         }
+        });
+		return sortedList.get(0).getKey();
   }
 }
 
@@ -243,7 +254,7 @@ HashMap<PVector, Float> getSums(ArrayList<PVector> input, boolean isY) {
 }
 
 // Get minimum point for given axis input
-Float getAxisMin(ArrayList<PVector> input, boolean isY) {
+HashMap<PVector, Float> getAxisMin(ArrayList<PVector> input, boolean isY) {
 	HashMap<PVector, Float> sumSquaresLeft, sumSquaresRight;
 	HashMap<PVector, Float> totalSumSquares = new HashMap<PVector, Float>();
 	// Get left distances
@@ -267,19 +278,7 @@ Float getAxisMin(ArrayList<PVector> input, boolean isY) {
 		PVector point = input.get(i);
 		totalSumSquares.put(point, sumSquaresLeft.get(point) + sumSquaresRight.get(point));
 	}
-	ArrayList<Entry<PVector, Float>> sortedList = new ArrayList<Entry<PVector, Float>>(totalSumSquares.entrySet());
-	Collections.sort(sortedList, new Comparator<Entry<PVector, Float>>() {
-		public int compare(Entry<PVector, Float> entry1, Entry<PVector, Float> entry2) {
-			return (int)(entry1.getValue() - entry2.getValue());
-		}
-	});
-	// Return final point coordinate
-	if (isY) {
-		return sortedList.get(0).getKey().y;
-	}
-	else {
-		return sortedList.get(0).getKey().x;
-	}
+    return totalSumSquares;
 }
 
 // Draw
