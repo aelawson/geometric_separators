@@ -118,6 +118,24 @@ void mousePressed() {
   redraw();
 }
 
+// Get geometric separator
+PShape getSeparator() {
+    // 1. Get centerpoint
+    PVector centerPoint = approxCenterpoint(rawInput);
+    // 2. Get random unit vector in 3D
+    PVector unitVector = PVector.Random3D();
+    // 3. Get radius
+    float radius = getRadius(centerPoint, unitVector);
+    // 4. Output sphere separator
+
+}
+
+// Get radius
+float getRadius(PVector centerPoint, PVector unitVector) {
+    float num = (float)Math.sqrt(centerPoint.z - centerPoint.mag());
+    return num / Math.abs(unitVector.z);
+}
+
 // Get geometric median
 PVector getGeometricMedian(ArrayList<PVector> input) {
 	if (input.size() == 0) {
