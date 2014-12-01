@@ -104,12 +104,12 @@ void mousePressed() {
   // If mouse presses calculate button
   else if ((mouseX >= calc_x && mouseX <= (calc_x + calc_w)) &&
 	(mouseY >= calc_y && mouseY <= (calc_y + calc_h))) {
-  	// Run algorithm
-  	centerPoint = approxCenterpoint(rawInput);
-  	if (centerPoint != null) {
-	  	System.out.println("x-coordinate: " + Float.toString(centerPoint.x));
-	    System.out.println("y-coordinate: " + Float.toString(centerPoint.y));
-	  }
+	// Run algorithm
+	centerPoint = approxCenterpoint(rawInput);
+	if (centerPoint != null) {
+		System.out.println("x-coordinate: " + Float.toString(centerPoint.x));
+		System.out.println("y-coordinate: " + Float.toString(centerPoint.y));
+	 }
   }
   else {
 		PVector new_point = new PVector(mouseX, mouseY);
@@ -120,41 +120,41 @@ void mousePressed() {
 
 // Get geometric median
 PVector getGeometricMedian(ArrayList<PVector> input) {
-	System.out.println("Geometric median...");
 	if (input.size() == 0) {
+		System.out.println("You don't have any input points!");
 		return null;
 	}
-  else if (input.size() == 1) {
+	else if (input.size() == 1) {
 		return input.get(0);
-  }
-  else {
-  	// Get the point
-  	float x = getAxisMin(input, false);
-  	float y = getAxisMin(input, true);
-  	return new PVector(x, y);
+	}
+	else {
+		// Get the point
+		float x = getAxisMin(input, false);
+		float y = getAxisMin(input, true);
+		return new PVector(x, y);
   }
 }
 
 // Sample input points into sets of 4
-ArrayList<HashSet<PVector>> samplePoints(ArrayList<PVector> input) {
-	ArrayList<HashSet<PVector>> setList = new ArrayList<HashSet<PVector>>();
-	HashSet<PVector> pointSet = new HashSet<PVector>();
+ArrayList<ArrayList<PVector>> samplePoints(ArrayList<PVector> input) {
+	ArrayList<ArrayList<PVector>> setList = new ArrayList<ArrayList<PVector>>();
+	ArrayList<PVector> pointList = new ArrayList<PVector>();
 	// While there are still points, split into sets
-	while (input.size() > 1) {
-		System.out.println("Sampling...");
+	while (input.size() > 0) {
 		double rnd = new Random().nextDouble();
 		int index = (int)(rnd * 10) % input.size();
 		// Add to set
-		pointSet.add(input.get(index));
+		pointList.add(input.get(index));
+		input.remove(index);
 		// Create new set on max size
-		if (pointSet.size() == 4) {
-			setList.add(pointSet);
-			pointSet = new HashSet<PVector>();
+		if (pointList.size() == 4) {
+			setList.add(pointList);
+			pointList = new ArrayList<PVector>();
 		}
 	}
 	// Add most recent unempty set to list
-	if (pointSet.size() > 0) {
-		setList.add(pointSet);
+	if (pointList.size() > 0) {
+		setList.add(pointList);
 	}
 	return setList;
 }
@@ -170,11 +170,11 @@ PVector approxCenterpoint(ArrayList<PVector> input) {
 		// Repeat 1 - 3 until one point remains and return that point
 		while (input.size() > 1) {
 			// 1. Sample points into groups of 4
-			ArrayList<HashSet<PVector>> setList = samplePoints(input);
+			ArrayList<ArrayList<PVector>> setList = samplePoints(input);
 			// 2. Compute radon point of each group (geometric median)
 			ArrayList<PVector> radonList = new ArrayList<PVector>();
-			for (HashSet<PVector> set : setList) {
-				PVector radonPoint = getGeometricMedian(input);
+			for (ArrayList<PVector> list : setList) {
+				PVector radonPoint = getGeometricMedian(list);
 				radonList.add(radonPoint);
 				// 3. Set input to be new radon points
 			}
@@ -230,7 +230,7 @@ HashMap<PVector, Float> getSums(ArrayList<PVector> input, boolean isY) {
   HashMap<PVector, Float> sumSquaresMemoize = new HashMap<PVector, Float>();
   ReturnTriple returnTriple = new ReturnTriple(0, 0, null);
   PVector currentPoint, nextPoint;
- 	float sum, dist;
+	float sum, dist;
 	for (int i = 0; i < input.size() - 1; i++) {
 		currentPoint = input.get(i);
 		nextPoint = input.get(i + 1);
@@ -243,8 +243,6 @@ HashMap<PVector, Float> getSums(ArrayList<PVector> input, boolean isY) {
 		sumSquaresMemoize = returnTriple.memoize;
 		sumSquaresMemoize.put(nextPoint, returnTriple.sum + (float)(i * Math.pow(returnTriple.dist, 2)) + (2 * i * returnTriple.dist));
 	}
- 	System.out.println("Printing dict...");
- 	System.out.println(sumSquaresMemoize);
 	return sumSquaresMemoize;
 }
 
@@ -260,7 +258,6 @@ Float getAxisMin(ArrayList<PVector> input, boolean isY) {
 		Collections.sort(input, compareX);
 	}
 	sumSquaresLeft = getSums(input, isY);
-	System.out.println(sumSquaresLeft);
 	// Get right distances
 	if (isY) {
 		Collections.sort(input, compareYRev);
@@ -269,7 +266,6 @@ Float getAxisMin(ArrayList<PVector> input, boolean isY) {
 		Collections.sort(input, compareXRev);
 	}
 	sumSquaresRight = getSums(input, isY);
-	System.out.println(sumSquaresRight);
 	// Calculate total sum and store it
 	for (int i = 0; i < sumSquaresLeft.size(); i++) {
 		PVector point = input.get(i);
@@ -308,8 +304,7 @@ void draw() {
   }
   // Draw center point
   if (centerPoint != null) {
-  	strokeWeight(6);
-  	fill (255, 0, 0);
-  	point(centerPoint.x, centerPoint.y);
+	strokeWeight(6);
+	point(centerPoint.x, centerPoint.y);
   }
 }
