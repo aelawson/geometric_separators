@@ -227,7 +227,6 @@ ReturnTriple calcLastSum(int i, PVector currentPoint, PVector nextPoint, ArrayLi
 // Get sums and sums of squares of distances for an input
 HashMap<PVector, Float> getSums(ArrayList<PVector> input, boolean isY) {
   // Memoization hash tables
-  HashMap<PVector, Float> sumMemoize = new HashMap<PVector, Float>();
   HashMap<PVector, Float> sumSquaresMemoize = new HashMap<PVector, Float>();
   ReturnTriple returnTriple = new ReturnTriple(0, 0, null);
   PVector currentPoint, nextPoint;
@@ -235,10 +234,6 @@ HashMap<PVector, Float> getSums(ArrayList<PVector> input, boolean isY) {
 	for (int i = 0; i < input.size() - 1; i++) {
 		currentPoint = input.get(i);
 		nextPoint = input.get(i + 1);
-		// Calculate sum
-		returnTriple = calcLastSum(i, currentPoint, nextPoint, input, sumMemoize, isY);
-		sumMemoize = returnTriple.memoize;
-		sumMemoize.put(nextPoint, returnTriple.sum + (i * returnTriple.dist));
 		// Calculate sum of squares
 		returnTriple = calcLastSum(i, currentPoint, nextPoint, input, sumSquaresMemoize, isY);
 		sumSquaresMemoize = returnTriple.memoize;
