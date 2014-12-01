@@ -31,6 +31,16 @@ private class ReturnTriple {
 	}
 }
 
+// Double used for returning centerpoint and sphere
+private class CenterAndSphere {
+    public PVector center;
+    public PShape sphere;
+    public CenterAndSphere(PVector center, PShape sphere) {
+        this.center = center;
+        this.sphere = sphere;
+    }
+}
+
 // Setup
 void setup() {
   background(255);
@@ -101,40 +111,41 @@ void mousePressed() {
 		// Reset input and background
 		rawInput.clear();
 		centerPoint = null;
+        sphere = null;
   }
   // If mouse presses calculate button
   else if ((mouseX >= calc_x && mouseX <= (calc_x + calc_w)) &&
-	(mouseY >= calc_y && mouseY <= (calc_y + calc_h))) {
-	// Run algorithm
-	centerPoint = approxCenterpoint(rawInput);
-	if (centerPoint != null) {
-		System.out.println("x-coordinate: " + Float.toString(centerPoint.x));
-		System.out.println("y-coordinate: " + Float.toString(centerPoint.y));
-	 }
+	   (mouseY >= calc_y && mouseY <= (calc_y + calc_h))) {
+    	// Run algorithm
+        CenterAndSphere returnVals = getSeparator(rawInput);
+        sphere = returnVals.sphere;
+        centerPoint = returnVals.center;
   }
   else {
         // Create new 2D point from mouse coordinates
 		PVector prelim_point = new PVector(mouseX, mouseY);
         // Lift to 3D with the squared magnitude of the original point
         PVector final_point = new PVector(prelim_point.x, prelim_point.y,
-            (float)Math.pow(prelim_point.mag(), 2))
+            (float)Math.pow(prelim_point.mag(), 2));
 		rawInput.add(final_point);
   }
   redraw();
 }
 
 // Get geometric separator
-PShape getSeparator() {
+CenterAndSphere getSeparator(ArrayList<PVector> input) {
     // Algorithm
     // 1. Get centerpoint
-    PVector centerPoint = approxCenterpoint(rawInput);
+    PVector centerPoint = approxCenterpoint(input);
     // 2. Get random unit vector in 3D
-    PVector unitVector = PVector.Random3D();
+    PVector unitVector = PVector.random3D();
     // 3. Get radius
     float radius = getRadius(centerPoint, unitVector);
     // 4. Output sphere separator
-    float[4] sphereAttributes = getSphereAttr(centerPoint, unitVector, radius);
-    sphere = createShape(ELLIPSE, sphereAttributes);
+    float[] sphereAttributes = getSphereAttr(centerPoint, unitVector, radius);
+    PShape separator = createShape(ELLIPSE, sphereAttributes);
+    CenterAndSphere returnVals = new CenterAndSphere(centerPoint, separator);
+    return returnVals;
 }
 
 // Get radius for our separator
@@ -143,12 +154,13 @@ float getRadius(PVector centerPoint, PVector unitVector) {
     return num / Math.abs(unitVector.z);
 }
 
+// Get the attributes for the sphere separators
 float[] getSphereAttr(PVector centerPoint, PVector unitVector, float radius) {
     PVector center = centerPoint.sub(unitVector.mult(radius));
     float x = center.x - radius;
     float y = center.y - radius;
     float z = center.z - radius;
-    float[4] attributes = {x, y, 2 * radius, 2 * radius};
+    float[] attributes = {x, y, 2 * radius, 2 * radius};
     return attributes;
 }
 
@@ -328,13 +340,15 @@ void draw() {
   text("Calculate.", calc_x + 25, calc_y + 15);
   // Draw input
   for (PVector point : rawInput) {
-	   strokeWeight(4);
-	   point(point.x, point.y);
+        strokeWeight(4);
+        point(point.x, point.y);
   }
   // Draw center point
   if (centerPoint != null) {
-	   strokeWeight(6);
-	   point(centerPoint.x, centerPoint.y);
+        strokeWeight(6);
+        point(centerPoint.x, centerPoint.y);
+        System.out.println("x-coordinate: " + Float.toString(centerPoint.x));
+        System.out.println("y-coordinate: " + Float.toString(centerPoint.y));
   }
   // Draw separator sphere projected to 2D
   if (sphere != null) {
