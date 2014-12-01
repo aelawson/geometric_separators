@@ -137,15 +137,16 @@ PVector getGeometricMedian(ArrayList<PVector> input) {
 
 // Sample input points into sets of 4
 ArrayList<ArrayList<PVector>> samplePoints(ArrayList<PVector> input) {
+    ArrayList<PVector> inputCopy = new ArrayList<PVector>(input);
 	ArrayList<ArrayList<PVector>> setList = new ArrayList<ArrayList<PVector>>();
 	ArrayList<PVector> pointList = new ArrayList<PVector>();
 	// While there are still points, split into sets
-	while (input.size() > 0) {
+	while (inputCopy.size() > 0) {
 		double rnd = new Random().nextDouble();
-		int index = (int)(rnd * 10) % input.size();
+		int index = (int)(rnd * 10) % inputCopy.size();
 		// Add to set
-		pointList.add(input.get(index));
-		input.remove(index);
+		pointList.add(inputCopy.get(index));
+		inputCopy.remove(index);
 		// Create new set on max size
 		if (pointList.size() == 4) {
 			setList.add(pointList);
