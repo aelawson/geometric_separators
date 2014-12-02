@@ -128,6 +128,7 @@ void mousePressed() {
         // Lift to 3D with the squared magnitude of the original point
         PVector final_point = new PVector(prelim_point.x, prelim_point.y,
             (float)Math.pow(prelim_point.mag(), 2));
+        System.out.println(final_point);
 		rawInput.add(final_point);
   }
   redraw();
@@ -151,11 +152,9 @@ CenterAndSphere getSeparator(ArrayList<PVector> input) {
 
 // Get radius for our separator
 float getRadius(PVector centerPoint, PVector unitVector) {
-	System.out.println(centerPoint.mag());
-    System.out.println(centerPoint.z);
-    System.out.println(centerPoint.z - centerPoint.mag());
     PVector centerPoint2D = new PVector(centerPoint.x, centerPoint.y);
-    float num = (float)Math.sqrt(centerPoint.z - Math.pow(centerPoint2D.mag(), 2));
+    float num = (float)Math.sqrt(Math.abs(centerPoint.z - Math.pow(centerPoint2D.mag(), 2)));
+    System.out.println(num);
     return num / Math.abs(unitVector.z);
 }
 
@@ -181,6 +180,12 @@ PVector getGeometricMedian(ArrayList<PVector> input) {
 	else if (input.size() == 1) {
 		return input.get(0);
 	}
+    else if (input.size() == 2) {
+        // Nothing yet
+    }
+    else if (input.size() == 4) {
+        // Nothing yet
+    }
 	else {
 		// Get the point
         HashMap<PVector, Float> total = new HashMap<PVector, Float>();
