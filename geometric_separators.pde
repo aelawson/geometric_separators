@@ -145,14 +145,17 @@ CenterAndSphere getSeparator(ArrayList<PVector> input) {
     // 4. Output sphere separator
     float[] sphereAttributes = getSphereAttr(centerPoint, unitVector, radius);
     PShape separator = createShape(ELLIPSE, sphereAttributes);
-    System.out.println(separator);
     CenterAndSphere returnVals = new CenterAndSphere(centerPoint, separator);
     return returnVals;
 }
 
 // Get radius for our separator
 float getRadius(PVector centerPoint, PVector unitVector) {
-    float num = (float)Math.sqrt(centerPoint.z - centerPoint.mag());
+	System.out.println(centerPoint.mag());
+    System.out.println(centerPoint.z);
+    System.out.println(centerPoint.z - centerPoint.mag());
+    PVector centerPoint2D = new PVector(centerPoint.x, centerPoint.y);
+    float num = (float)Math.sqrt(centerPoint.z - Math.pow(centerPoint2D.mag(), 2));
     return num / Math.abs(unitVector.z);
 }
 
