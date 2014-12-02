@@ -48,6 +48,7 @@ void setup() {
   // Create buttons
   reset = createShape(RECT, reset_x, reset_y, reset_w, reset_h);
   calculate = createShape(RECT, calc_x, calc_y, calc_w, calc_h);
+  sphere = null;
   noLoop();
   compareX = new Comparator<PVector>() {
 		public int compare(PVector p1, PVector p2) {
@@ -144,6 +145,7 @@ CenterAndSphere getSeparator(ArrayList<PVector> input) {
     // 4. Output sphere separator
     float[] sphereAttributes = getSphereAttr(centerPoint, unitVector, radius);
     PShape separator = createShape(ELLIPSE, sphereAttributes);
+    System.out.println(separator);
     CenterAndSphere returnVals = new CenterAndSphere(centerPoint, separator);
     return returnVals;
 }
@@ -156,10 +158,13 @@ float getRadius(PVector centerPoint, PVector unitVector) {
 
 // Get the attributes for the sphere separators
 float[] getSphereAttr(PVector centerPoint, PVector unitVector, float radius) {
-    PVector center = centerPoint.sub(unitVector.mult(radius));
-    float x = center.x - radius;
-    float y = center.y - radius;
-    float z = center.z - radius;
+    PVector unitVectorCopy = new PVector(unitVector.x, unitVector.y, unitVector.z);
+    PVector centerPointCopy = new PVector(centerPoint.x, centerPoint.y);
+    unitVectorCopy.mult(radius);
+    centerPointCopy.sub(unitVectorCopy);
+    float x = centerPointCopy.x - radius;
+    float y = centerPointCopy.y - radius;
+    float z = centerPointCopy.z - radius;
     float[] attributes = {x, y, 2 * radius, 2 * radius};
     return attributes;
 }
@@ -234,8 +239,8 @@ PVector approxCenterpoint(ArrayList<PVector> input) {
 			for (ArrayList<PVector> list : setList) {
 				PVector radonPoint = getGeometricMedian(list);
 				radonList.add(radonPoint);
-				// 3. Set input to be new radon points
 			}
+            // 3. Set input to be new radon points
 			input = radonList;
 		}
 		return input.get(0);
