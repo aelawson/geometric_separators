@@ -173,7 +173,7 @@ void mousePressed() {
         exampleList.add(ex7);
         exampleList.add(ex8);
         exampleList.add(ex9);
-        exampleCenterPoint = new PVector(250, 250, 20000);
+        exampleCenterPoint = new PVector(250, 250, 10000);
         CenterAndSphere example = getExample(exampleCenterPoint);
         exampleSphere = example.sphere;
         System.out.println(exampleSphere);
@@ -265,8 +265,10 @@ CenterAndSphere getExample(PVector exampleCenterPoint) {
     unitVector.x = Math.abs(unitVector.x);
     unitVector.y = Math.abs(unitVector.y);
     unitVector.z = Math.abs(unitVector.z);
+    System.out.println("Unit Vector...");
+    System.out.println(unitVector);
+    System.out.println(unitVector.mag());
     float radius = getRadius(exampleCenterPoint, unitVector);
-    System.out.println(radius);
     float[] sphereAttributes = getSphereAttr(exampleCenterPoint, unitVector, radius);
     PShape separator = createShape(ELLIPSE, sphereAttributes);
     CenterAndSphere returnVals = new CenterAndSphere(exampleCenterPoint, separator);
@@ -285,7 +287,6 @@ CenterAndSphere getSeparator(ArrayList<PVector> input) {
     unitVector.y = Math.abs(unitVector.y);
     unitVector.z = Math.abs(unitVector.z);
     System.out.println("Unit Vector...");
-    System.out.println(unitVector);
     // 3. Get radius
     float radius = getRadius(centerPoint, unitVector);
     // 4. Output sphere separator
@@ -298,11 +299,7 @@ CenterAndSphere getSeparator(ArrayList<PVector> input) {
 // Get radius for our separator
 float getRadius(PVector centerPoint, PVector unitVector) {
     PVector centerPoint2D = new PVector(centerPoint.x, centerPoint.y);
-    System.out.println(centerPoint);
-    System.out.println(centerPoint2D);
     float num = (float)Math.sqrt(Math.abs(centerPoint.z - Math.pow(centerPoint2D.mag(), 2)));
-    System.out.println(num);
-    System.out.println(unitVector.z);
     return num / Math.abs(unitVector.z);
 }
 
@@ -505,6 +502,7 @@ void draw() {
         fill(255);
         ellipseMode(CENTER);
         shape(exampleSphere);
+        strokeWeight(2);
   }
   if (exampleCenterPoint != null) {
         stroke(255, 0, 0);
@@ -512,6 +510,7 @@ void draw() {
         point(exampleCenterPoint.x, exampleCenterPoint.y);
         System.out.println("x-coordinate: " + Float.toString(exampleCenterPoint.x));
         System.out.println("y-coordinate: " + Float.toString(exampleCenterPoint.y));
+        strokeWeight(2);
         stroke(0);
   }
   shape(reset);
@@ -528,9 +527,11 @@ void draw() {
   for (PVector point : rawInput) {
         strokeWeight(8);
         point(point.x, point.y);
+        strokeWeight(2);
   }
   for (PVector point : exampleList) {
         strokeWeight(8);
         point(point.x, point.y);
+        strokeWeight(2);
   }
 }
