@@ -92,15 +92,15 @@ PVector radonTetra(ArrayList<PVector> points) {
         RealMatrix d4Matrix = getDetMatrix(pointsCopy.get(0), pointsCopy.get(1), pointsCopy.get(2), testPoint;
         // Compute determinants
         ArrayList<double> detList = new ArrayList<double>();
-        double d0 = new SingularValueDecomposition(coefficients).getDeterminant(d0Matrix);
+        double d0 = new SingularValueDecomposition(d0Matrix).getDeterminant();
         detList.add(d0);
-        double d1 = new SingularValueDecomposition(coefficients).getDeterminant(d1Matrix);
+        double d1 = new SingularValueDecomposition(d1Matrix).getDeterminant();
         detList.add(d1);
-        double d2 = new SingularValueDecomposition(coefficients).getDeterminant(d2Matrix);
+        double d2 = new SingularValueDecomposition(d2Matrix).getDeterminant();
         detList.add(d2);
-        double d3 = new SingularValueDecomposition(coefficients).getDeterminant(d3Matrix);
+        double d3 = new SingularValueDecomposition(d3Matrix).getDeterminant();
         detList.add(d3);
-        double d4 = new SingularValueDecomposition(coefficients).getDeterminant(d4Matrix);
+        double d4 = new SingularValueDecomposition(d4Matrix).getDeterminant();
         detList.add(d4);
         // If the sign test passes
         if (areSameSign(detList)) {
@@ -112,7 +112,7 @@ PVector radonTetra(ArrayList<PVector> points) {
 }
 
 // Tests if a ray intersects a triangle
-void radonIntersect() {
+void radonIntersect(ArrayList<PVector> points) {
 
 }
 
