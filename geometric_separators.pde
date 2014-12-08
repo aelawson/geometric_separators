@@ -21,7 +21,7 @@ PShape sphere;
 PVector centerPoint;
 ArrayList<PVector> rawInput = new ArrayList<PVector>();
 
-// Double used for returning centerpoint and sphere
+// Object used for returning centerpoint and sphere
 private class CenterAndSphere {
     public PVector center;
     public PShape sphere;
@@ -68,31 +68,89 @@ void mousePressed() {
 }
 
 // Get Radon point
-PVector getRadonPoint(ArrayList<PVector> input) {
-    // Set a to equal our points
-    double[][] aData = new double[4][input.size()];
-    for (int i = 0; i < input.size(); i++) {
-        for (int j = 0; j < 4; j++) {
-            switch(j) {
-                case 0: aData[j][i] = (double)input.get(i).x;
-                    break;
-                case 1: aData[j][i] = (double)input.get(i).y;
-                    break;
-                case 2: aData[j][i] = (double)input.get(i).z;
-                    break;
-                case 3: aData[j][i] = 1;
-                    break;
-            }
+PVector getRadonPoint(ArrayList<PVector> points) {
+    PVector radonPoint = null;
+    radonPoint = radonTetrx(points);
+    if (radonPoint == null) {
+        radonPoint = radonIntersect();
+    }
+    return radonPoint;
+}
+
+// Tests if a point is within a tetrahedron
+PVector radonTetra(ArrayList<PVector> points) {
+    PVector radonPoint = null;
+    for (int i = 0; i < points.size(); i++) {
+        ArrayList<PVector> pointsCopy = new ArrayList<PVector>(points);
+        PVector testPoint = pointsCopy.get(i);
+        pointsCopy.remove(i);
+        // Test if every determinant has the same sign
+        RealMatrix d0Matrix = getDetMatrix(pointsCopy.get(0), pointsCopy.get(1), pointsCopy.get(2), pointsCopy.get(3);
+        RealMatrix d1Matrix = getDetMatrix(testPoint, pointsCopy.get(1), pointsCopy.get(2), pointsCopy.get(3);
+        RealMatrix d2Matrix = getDetMatrix(pointsCopy.get(0), testPoint, pointsCopy.get(2), pointsCopy.get(3);
+        RealMatrix d3Matrix = getDetMatrix(pointsCopy.get(0), pointsCopy.get(1), testPoint, pointsCopy.get(3);
+        RealMatrix d4Matrix = getDetMatrix(pointsCopy.get(0), pointsCopy.get(1), pointsCopy.get(2), testPoint;
+        // Compute determinants
+        ArrayList<double> detList = new ArrayList<double>();
+        double d0 = new SingularValueDecomposition(coefficients).getDeterminant(d0Matrix);
+        detList.add(d0);
+        double d1 = new SingularValueDecomposition(coefficients).getDeterminant(d1Matrix);
+        detList.add(d1);
+        double d2 = new SingularValueDecomposition(coefficients).getDeterminant(d2Matrix);
+        detList.add(d2);
+        double d3 = new SingularValueDecomposition(coefficients).getDeterminant(d3Matrix);
+        detList.add(d3);
+        double d4 = new SingularValueDecomposition(coefficients).getDeterminant(d4Matrix);
+        detList.add(d4);
+        // If the sign test passes
+        if (areSameSign(detList)) {
+            radonPoint = testPoint;
+            return radonPoint;
         }
     }
-    RealMatrix coefficients = new Array2DRowRealMatrix(aData, false);
-    RealVector constants = new ArrayRealVector(new double[] {0, 0, 0, 0}, false);
-    DecompositionSolver solver = new SingularValueDecomposition(coefficients).getSolver();
-    RealVector solution = solver.solve(constants);
-    for (double x : solution.toArray()) {
-        System.out.println(x);
+    return radonPoint;
+}
+
+// Tests if a ray intersects a triangle
+void radonIntersect() {
+
+}
+
+// Get the determinant matrix for a set of points
+RealMatrix getDetMatrix(PVector p1, PVector p2, PVector p3, PVector p4) {
+    float[][] matrixData = {{p1.x, p1.y, p1.z, 1}, {p2.x, p2.y, p2.z, 1},
+        {p3.x, p3.y, p3.z, 1}, {p4.x, p4.y, p4.z, 1}};
+    RealMatrix matrix = MatrixUtils.createRealMatrix(toDoubleArray(matrixData));
+    return matrix;
+}
+
+// Checks if a list of doubles all have the same sign
+boolean areSameSign(ArrayList<double> detList) {
+    int negDet = 0;
+    for (double det : detList) {
+        if (det < 0) {
+            negDet++;
+        }
     }
-    return new PVector(0,0);
+    if (negDet == 0 || negDet == detList.size()) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+// Convert float array to double array
+float[][] toDoubleArray(float[][] array) {
+    int numRows = array.length;
+    int numCols = array[0].length;
+    double[][] doubleArray = new double[numRows][numCols];
+    for (int i = 0; i < array.length {
+        for (int j = 0; j < array[i].length {
+            doubleArray[i][j] = (double)array[i][j];
+        }
+    }
+    return doubleArray;
 }
 
 // Get geometric separator
@@ -116,7 +174,7 @@ float getRadius(PVector centerPoint, PVector unitVector) {
     return numerator / Math.abs(unitVector.z);
 }
 
-// Get the attributes for the sphere separators
+// Get the attributes for the sphere separator
 float[] getSphereAttr(PVector centerPoint, PVector unitVector, float radius) {
     unitVector.mult(radius);
     centerPoint.sub(unitVector);
