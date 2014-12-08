@@ -3,6 +3,8 @@ import java.util.Map.*;
 import java.lang.Boolean;
 import java.util.Random;
 import org.jblas.*;
+import org.apache.commons.math3.linear.*;
+import org.apache.commons.math3.linear.SingularValueDecomposition;
 
 int reset_x = 140;
 int reset_y = 460;
@@ -31,59 +33,65 @@ private class CenterAndSphere {
 
 // Setup
 void setup() {
-  background(255);
-  size(500,500,P2D);
-  reset = createShape(RECT, reset_x, reset_y, reset_w, reset_h);
-  calculate = createShape(RECT, calc_x, calc_y, calc_w, calc_h);
-  noLoop();
+    background(255);
+    size(500,500,P2D);
+    reset = createShape(RECT, reset_x, reset_y, reset_w, reset_h);
+    calculate = createShape(RECT, calc_x, calc_y, calc_w, calc_h);
+    noLoop();
 }
 
 // On mouse press
 void mousePressed() {
-  // If mouse presses reset button
-  if ((mouseX >= reset_x && mouseX <= (reset_x + reset_w)) &&
-	(mouseY >= reset_y && mouseY <= (reset_y + reset_h))) {
-		// Reset input and background
-		rawInput.clear();
-		centerPoint = null;
+    // If mouse presses reset button
+    if ((mouseX >= reset_x && mouseX <= (reset_x + reset_w)) &&
+    (mouseY >= reset_y && mouseY <= (reset_y + reset_h))) {
+    	// Reset input and background
+    	rawInput.clear();
+    	centerPoint = null;
         sphere = null;
-  }
-  // If mouse presses calculate button
-  else if ((mouseX >= calc_x && mouseX <= (calc_x + calc_w)) &&
-	   (mouseY >= calc_y && mouseY <= (calc_y + calc_h))) {
+    }
+    // If mouse presses calculate button
+    else if ((mouseX >= calc_x && mouseX <= (calc_x + calc_w)) &&
+        (mouseY >= calc_y && mouseY <= (calc_y + calc_h))) {
         CenterAndSphere returnVals = getSeparator(rawInput);
         sphere = returnVals.sphere;
         centerPoint = returnVals.center;
-  }
-  // Otherwise add input to list
-  else {
+    }
+    // Otherwise add input to list
+    else {
         // Create new 2D point from mouse coordinates
-		PVector point = new PVector(mouseX, mouseY, 0);
+    	PVector point = new PVector(mouseX, mouseY, 0);
         PVector pointLifted = new PVector(point.x, point.y, (float)Math.pow(point.mag(), 2));
-		rawInput.add(pointLifted);
-  }
-  redraw();
+    	rawInput.add(pointLifted);
+    }
+    redraw();
 }
 
 // Get Radon point
 PVector getRadonPoint(ArrayList<PVector> input) {
     // Set a to equal our points
-    float[][] aData = new float[3][input.size()];
+    double[][] aData = new double[4][input.size()];
     for (int i = 0; i < input.size(); i++) {
-        for (int j = 0; j < 3; j++) {
+        for (int j = 0; j < 4; j++) {
             switch(j) {
-                case 0: aData[j][i] = input.get(i).x;
+                case 0: aData[j][i] = (double)input.get(i).x;
                     break;
-                case 1: aData[j][i] = input.get(i).y;
+                case 1: aData[j][i] = (double)input.get(i).y;
                     break;
-                case 2: aData[j][i] = input.get(i).z;
+                case 2: aData[j][i] = (double)input.get(i).z;
+                    break;
+                case 3: aData[j][i] = 1;
                     break;
             }
         }
     }
-    FloatMatrix coefficients = new FloatMatrix(aData);
-    FloatMatrix constants = FloatMatrix.zeros(5, 2);
-    FloatMatrix solution = Solve.solveLeastSquares(coefficients, constants);
+    RealMatrix coefficients = new Array2DRowRealMatrix(aData, false);
+    RealVector constants = new ArrayRealVector(new double[] {0, 0, 0, 0}, false);
+    DecompositionSolver solver = new SingularValueDecomposition(coefficients).getSolver();
+    RealVector solution = solver.solve(constants);
+    for (double x : solution.toArray()) {
+        System.out.println(x);
+    }
     return new PVector(0,0);
 }
 
@@ -91,7 +99,6 @@ PVector getRadonPoint(ArrayList<PVector> input) {
 CenterAndSphere getSeparator(ArrayList<PVector> input) {
     PVector centerPoint = approxCenterpoint(input);
     PVector unitVector = PVector.random3D();
-    unitVector.mult(500);
     unitVector.x = Math.abs(unitVector.x);
     unitVector.y = Math.abs(unitVector.y);
     unitVector.z = Math.abs(unitVector.z);
@@ -164,31 +171,31 @@ PVector approxCenterpoint(ArrayList<PVector> input) {
 
 // Draw
 void draw() {
-  background(255);
-  // Draw center point
-  if (centerPoint != null) {
+    background(255);
+    shape(reset);
+    shape(calculate);
+    fill(50);
+    textSize(20);
+    text("Geometric Separators", 140, 20);
+    textSize(12);
+    text("Reset.", reset_x + 30, reset_y + 15);
+    text("Calculate.", calc_x + 25, calc_y + 15);
+    // Draw input
+    for (PVector point : rawInput) {
+        strokeWeight(8);
+        point(point.x, point.y);
+        strokeWeight(2);
+    }
+    // Draw center point
+    if (centerPoint != null) {
         strokeWeight(6);
         point(centerPoint.x, centerPoint.y);
         System.out.println("x-coordinate: " + Float.toString(centerPoint.x));
         System.out.println("y-coordinate: " + Float.toString(centerPoint.y));
-  }
-  // Draw separator sphere projected to 2D
-  if (sphere != null) {
+    }
+    // Draw separator sphere projected to 2D
+    if (sphere != null) {
         strokeWeight(6);
         shape(sphere);
-  }
-  shape(reset);
-  shape(calculate);
-  fill(50);
-  textSize(20);
-  text("Geometric Separators", 140, 20);
-  textSize(12);
-  text("Reset.", reset_x + 30, reset_y + 15);
-  text("Calculate.", calc_x + 25, calc_y + 15);
-  // Draw input
-  for (PVector point : rawInput) {
-        strokeWeight(8);
-        point(point.x, point.y);
-        strokeWeight(2);
-  }
+    }
 }
