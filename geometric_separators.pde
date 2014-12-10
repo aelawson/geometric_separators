@@ -19,6 +19,8 @@ PShape reset;
 PShape calculate;
 PShape sphere;
 PVector centerPoint;
+PVector sphereCenter;
+float sphereRadius;
 ArrayList<PVector> rawInput = new ArrayList<PVector>();
 
 // Object used for returning centerpoint and sphere
@@ -49,6 +51,8 @@ void mousePressed() {
     	rawInput.clear();
     	centerPoint = null;
         sphere = null;
+        sphereCenter = null;
+        sphereRadius = 0;
     }
     // If mouse presses calculate button
     else if ((mouseX >= calc_x && mouseX <= (calc_x + calc_w)) &&
@@ -271,11 +275,13 @@ float getRadius(PVector centerPoint, PVector unitVector) {
 float[] getSphereAttr(PVector centerPoint, PVector unitVector, float radius) {
     unitVector.mult(radius);
     centerPoint.sub(unitVector);
-    float[] attributes = {centerPoint.x, centerPoint.y, 2 * radius, 2 * radius};
+    sphereCenter = new PVector(centerPoint.x, centerPoint.y, centerPoint.z);
+    sphereRadius = radius;
+    float[] attributes = {centerPoint.x, centerPoint.y, radius, radius};
     return attributes;
 }
 
-// Sample input points into sets of 4
+// Sample input points into sets of 5
 ArrayList<ArrayList<PVector>> samplePoints(ArrayList<PVector> input) {
     ArrayList<PVector> inputCopy = new ArrayList<PVector>(input);
     ArrayList<ArrayList<PVector>> setList = new ArrayList<ArrayList<PVector>>();
@@ -336,6 +342,7 @@ void draw() {
     // Draw separator sphere projected to 2D
     if (sphere != null) {
         strokeWeight(6);
+        ellipseMode(RADIUS);
         shape(sphere);
     }
     shape(reset);
@@ -349,7 +356,21 @@ void draw() {
     // Draw input
     for (PVector point : rawInput) {
         strokeWeight(8);
-        point(point.x, point.y);
-        strokeWeight(2);
+        if (sphereCenter != null) {
+            stroke(0, 0, 255);
+            point(sphereCenter.x, sphereCenter.y);
+            stroke(0);
+            if (point.x >= sphereCenter.x - sphereRadius && point.x <= sphereCenter.x + sphereRadius) {
+                if (point.y >= sphereCenter.y - sphereRadius && point.y <= sphereCenter.y + sphereRadius) {
+                    stroke(0, 255, 0);
+                }
+            }
+            point(point.x, point.y);
+        }
+        else {
+            stroke(0);
+            point(point.x, point.y);
+            strokeWeight(2);
+        }
     }
 }
