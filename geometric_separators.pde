@@ -72,7 +72,6 @@ PVector getRadonPoint(ArrayList<PVector> points) {
     PVector radonPoint = null;
     radonPoint = inTetrahedron(points);
     if (radonPoint == null) {
-        System.out.println("Intersect");
         radonPoint = intersectTri(points);
     }
     return radonPoint;
@@ -182,7 +181,6 @@ PVector testIntersect(PVector t1, PVector t2, PVector t3, PVector r1, PVector r2
     float r = x / y;
     // No intersection
     if (r < 0) {
-        System.out.println("No intersect.");
         return null;
     }
     rayDir.mult(r);
@@ -201,15 +199,12 @@ PVector testIntersect(PVector t1, PVector t2, PVector t3, PVector r1, PVector r2
     float t = ((abDot * waDot) - (aDot * wbDot)) / d;
     // Check if the point is outside
     if (s < 0 || s > 1) {
-        System.out.println("Outside.");
         return null;
     }
     else if (t < 0 || (s + t) > 1) {
-        System.out.println("Outside.");
         return null;
     }
     // Otherwise it's inside we can return it
-    System.out.println("Inside");
     return point;
 }
 
@@ -329,6 +324,20 @@ PVector approxCenterpoint(ArrayList<PVector> input) {
 // Draw
 void draw() {
     background(255);
+    // Draw center point
+    if (centerPoint != null) {
+        stroke(255, 0, 0);
+        strokeWeight(6);
+        point(centerPoint.x, centerPoint.y);
+        stroke(0);
+        System.out.println("x-coordinate: " + Float.toString(centerPoint.x));
+        System.out.println("y-coordinate: " + Float.toString(centerPoint.y));
+    }
+    // Draw separator sphere projected to 2D
+    if (sphere != null) {
+        strokeWeight(6);
+        shape(sphere);
+    }
     shape(reset);
     shape(calculate);
     fill(50);
@@ -342,17 +351,5 @@ void draw() {
         strokeWeight(8);
         point(point.x, point.y);
         strokeWeight(2);
-    }
-    // Draw center point
-    if (centerPoint != null) {
-        strokeWeight(6);
-        point(centerPoint.x, centerPoint.y);
-        System.out.println("x-coordinate: " + Float.toString(centerPoint.x));
-        System.out.println("y-coordinate: " + Float.toString(centerPoint.y));
-    }
-    // Draw separator sphere projected to 2D
-    if (sphere != null) {
-        strokeWeight(6);
-        shape(sphere);
     }
 }
