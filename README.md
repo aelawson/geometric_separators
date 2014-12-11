@@ -9,5 +9,3 @@ About:
 ------
 
 This Java program will allow you to input 2D
-
-

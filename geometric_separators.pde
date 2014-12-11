@@ -57,8 +57,12 @@ void mousePressed() {
     // If mouse presses calculate button
     else if ((mouseX >= calc_x && mouseX <= (calc_x + calc_w)) &&
         (mouseY >= calc_y && mouseY <= (calc_y + calc_h))) {
-        if (rawInput.size() == 0) {
-            System.out.println("You don't have any input points!");
+        if (rawInput.size() < 5) {
+            System.out.println("You need at least 5 points!");
+            return;
+        }
+        else if ((Math.log((double)rawInput.size()) / Math.log(5)) % 1 != 0) {
+            System.out.println("You don't have a power of 5!");
             return;
         }
         CenterAndSphere returnVals = getSeparator(rawInput);
