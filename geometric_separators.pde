@@ -71,7 +71,6 @@ void mousePressed() {
             PVector point = new PVector(x, y, 0);
             PVector pointLifted = new PVector(point.x, point.y, (float)Math.pow(point.mag(), 2));
             rawInput.add(pointLifted);
-            System.out.println(rawInput.size());
         }
     }
     // If mouse presses calculate button
@@ -81,8 +80,7 @@ void mousePressed() {
             System.out.println("You need at least 5 points!");
             return;
         }
-        else if ((Math.log10((double)rawInput.size()) / Math.log10(5)) % 1 > 0.00000001) {
-            System.out.println((Math.log10(rawInput.size()) / Math.log10(5) % 1));
+        else if ((Math.log(rawInput.size()) / Math.log(5)) % 1 > 0.001) {
             System.out.println("You don't have a power of 5!");
             return;
         }
@@ -105,12 +103,10 @@ PVector getRadonPoint(ArrayList<PVector> points) {
     PVector radonPoint = null;
     radonPoint = inTetrahedron(points);
     if (radonPoint == null) {
-        System.out.println("TRIANGLE");
         radonPoint = intersectTri(points);
         return radonPoint;
     }
     else {
-        System.out.println("TETRA");
         return radonPoint;
     }
 }
@@ -290,10 +286,19 @@ double[][] toDoubleArray(float[][] array) {
 // Get geometric separator
 CenterAndSphere getSeparator(ArrayList<PVector> input) {
     PVector centerPoint = approxCenterpoint(input);
+    // Fix for centerPoint coming back null - not sure why this happens.
+    while (centerPoint == null) {
+        centerPoint = approxCenterpoint(input);
+    }
     PVector unitVector = PVector.random3D();
-    unitVector.x = Math.abs(unitVector.x);
-    unitVector.y = Math.abs(unitVector.y);
-    unitVector.z = Math.abs(unitVector.z);
+    // Prevent the unit vector from being too small - radius becomes way too big.
+    while (unitVector.z < 0.5) {
+        unitVector = PVector.random3D();
+        unitVector.x = Math.abs(unitVector.x);
+        unitVector.y = Math.abs(unitVector.y);
+        unitVector.z = Math.abs(unitVector.z);
+    }
+    System.out.println(unitVector.z);
     float radius = getRadius(centerPoint, unitVector);
     float[] sphereAttributes = getSphereAttr(centerPoint, unitVector, radius);
     PShape separator = createShape(ELLIPSE, sphereAttributes);
@@ -326,7 +331,7 @@ ArrayList<ArrayList<PVector>> samplePoints(ArrayList<PVector> input) {
     // While there are still points, split into sets
     while (inputCopy.size() > 0) {
         double rnd = new Random().nextDouble();
-        int index = (int)(rnd * 10) % inputCopy.size();
+        int index = (int)(rnd * inputCopy.size());
         // Add to set
         pointList.add(inputCopy.get(index));
         inputCopy.remove(index);
@@ -350,6 +355,9 @@ PVector approxCenterpoint(ArrayList<PVector> input) {
 		ArrayList<PVector> radonList = new ArrayList<PVector>();
 		for (ArrayList<PVector> list : setList) {
 			PVector radonPoint = getRadonPoint(list);
+            if (radonPoint == null) {
+                return null;
+            }
 			radonList.add(radonPoint);
 		}
 		input = radonList;
