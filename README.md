@@ -1,7 +1,7 @@
 Geometric Separators
 ====================
 
-![My image](http://imgur.com/e5PkQ4a)
+[Imgur](http://i.imgur.com/e5PkQ4a.png)
 
 Geometric separators project for CSE 4095 (Computational Geometry).
 
