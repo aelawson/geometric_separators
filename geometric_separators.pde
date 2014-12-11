@@ -71,6 +71,7 @@ void mousePressed() {
             PVector point = new PVector(x, y, 0);
             PVector pointLifted = new PVector(point.x, point.y, (float)Math.pow(point.mag(), 2));
             rawInput.add(pointLifted);
+            System.out.println(rawInput.size());
         }
     }
     // If mouse presses calculate button
@@ -80,7 +81,8 @@ void mousePressed() {
             System.out.println("You need at least 5 points!");
             return;
         }
-        else if ((Math.log((double)rawInput.size()) / Math.log(5)) % 1 != 0) {
+        else if ((Math.log10((double)rawInput.size()) / Math.log10(5)) % 1 > 0.00000001) {
+            System.out.println((Math.log10(rawInput.size()) / Math.log10(5) % 1));
             System.out.println("You don't have a power of 5!");
             return;
         }
@@ -103,14 +105,19 @@ PVector getRadonPoint(ArrayList<PVector> points) {
     PVector radonPoint = null;
     radonPoint = inTetrahedron(points);
     if (radonPoint == null) {
+        System.out.println("TRIANGLE");
         radonPoint = intersectTri(points);
+        return radonPoint;
     }
-    return radonPoint;
+    else {
+        System.out.println("TETRA");
+        return radonPoint;
+    }
 }
 
 // Tests if a point is within a tetrahedron
 PVector inTetrahedron(ArrayList<PVector> points) {
-    PVector radonPoint = null;
+    PVector radonPoint;
     for (int i = 0; i < points.size(); i++) {
         ArrayList<PVector> pointsCopy = new ArrayList<PVector>(points);
         PVector testPoint = pointsCopy.get(i);
@@ -139,7 +146,7 @@ PVector inTetrahedron(ArrayList<PVector> points) {
             return radonPoint;
         }
     }
-    return radonPoint;
+    return null;
 }
 
 // Tests if a ray intersects a triangle
@@ -166,7 +173,7 @@ PVector intersectTri(ArrayList<PVector> points) {
         return point;
     }
     // Triangle of Points 1, 3, 5
-    point = testIntersect(points.get(0), points.get(2), points.get(4), points.get(2), points.get(3));
+    point = testIntersect(points.get(0), points.get(2), points.get(4), points.get(1), points.get(3));
     if (point != null) {
         return point;
     }
@@ -187,6 +194,11 @@ PVector intersectTri(ArrayList<PVector> points) {
     }
     // Triangle of Points 2, 4, 5
     point = testIntersect(points.get(1), points.get(3), points.get(4), points.get(0), points.get(2));
+    if (point != null) {
+        return point;
+    }
+    // Triangle of Points 3, 4, 5
+    point = testIntersect(points.get(2), points.get(3), points.get(4), points.get(0), points.get(1));
     if (point != null) {
         return point;
     }
