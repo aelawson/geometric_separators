@@ -2,22 +2,26 @@ import java.util.*;
 import java.util.Map.*;
 import java.lang.Boolean;
 import java.util.Random;
-import org.jblas.*;
 import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.linear.LUDecomposition;
 
-int reset_x = 140;
+int reset_x = 90;
 int reset_y = 460;
 int reset_w = 100;
 int reset_h = 25;
-int calc_x = 250;
+int calc_x = 200;
 int calc_y = 460;
 int calc_w = 100;
 int calc_h = 25;
+int rand_x = 310;
+int rand_y = 460;
+int rand_w = 100;
+int rand_h = 25;
 
 PShape reset;
 PShape calculate;
 PShape sphere;
+PShape random;
 PVector centerPoint;
 PVector sphereCenter;
 float sphereRadius;
@@ -39,6 +43,7 @@ void setup() {
     size(500,500,P2D);
     reset = createShape(RECT, reset_x, reset_y, reset_w, reset_h);
     calculate = createShape(RECT, calc_x, calc_y, calc_w, calc_h);
+    random = createShape(RECT, rand_x, rand_y, rand_w, rand_h);
     noLoop();
 }
 
@@ -53,6 +58,20 @@ void mousePressed() {
         sphere = null;
         sphereCenter = null;
         sphereRadius = 0;
+    }
+    // If mouse presses random button
+    else if ((mouseX >= rand_x && mouseX <= (rand_x + rand_w)) &&
+    (mouseY >= rand_y && mouseY <= (rand_y + rand_h))) {
+        for (int i = 0; i < 25; i++) {
+            double rnd = new Random().nextDouble();
+            int x = (int)(rnd * 500);
+            rnd = new Random().nextDouble();
+            int y = (int)(rnd * 500);
+            // Create new 2D point from random generator
+            PVector point = new PVector(x, y, 0);
+            PVector pointLifted = new PVector(point.x, point.y, (float)Math.pow(point.mag(), 2));
+            rawInput.add(pointLifted);
+        }
     }
     // If mouse presses calculate button
     else if ((mouseX >= calc_x && mouseX <= (calc_x + calc_w)) &&
@@ -272,14 +291,8 @@ CenterAndSphere getSeparator(ArrayList<PVector> input) {
 
 // Get radius for our separator
 float getRadius(PVector centerPoint, PVector unitVector) {
-    System.out.println("Centerpoint");
-    System.out.println(centerPoint);
-    System.out.println("Centerpoint2D");
     PVector centerPoint2D = new PVector(centerPoint.x, centerPoint.y);
-    System.out.println(centerPoint2D);
-    System.out.println("Numerator.");
     float numerator = (float)Math.sqrt(Math.abs(centerPoint.z - Math.pow(centerPoint2D.mag(), 2)));
-    System.out.println(numerator);
     return numerator / Math.abs(unitVector.z);
 }
 
@@ -350,12 +363,14 @@ void draw() {
     }
     shape(reset);
     shape(calculate);
+    shape(random);
     fill(50);
     textSize(20);
     text("Geometric Separators", 140, 20);
     textSize(12);
     text("Reset.", reset_x + 30, reset_y + 15);
     text("Calculate.", calc_x + 25, calc_y + 15);
+    text("Random.", rand_x + 25, rand_y + 15);
     // Draw input
     for (PVector point : rawInput) {
         strokeWeight(8);
