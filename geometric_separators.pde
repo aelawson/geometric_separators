@@ -298,7 +298,6 @@ CenterAndSphere getSeparator(ArrayList<PVector> input) {
         unitVector.y = Math.abs(unitVector.y);
         unitVector.z = Math.abs(unitVector.z);
     }
-    System.out.println(unitVector.z);
     float radius = getRadius(centerPoint, unitVector);
     float[] sphereAttributes = getSphereAttr(centerPoint, unitVector, radius);
     PShape separator = createShape(ELLIPSE, sphereAttributes);
