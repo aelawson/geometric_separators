@@ -57,6 +57,10 @@ void mousePressed() {
     // If mouse presses calculate button
     else if ((mouseX >= calc_x && mouseX <= (calc_x + calc_w)) &&
         (mouseY >= calc_y && mouseY <= (calc_y + calc_h))) {
+        if (rawInput.size() == 0) {
+            System.out.println("You don't have any input points!");
+            return;
+        }
         CenterAndSphere returnVals = getSeparator(rawInput);
         sphere = returnVals.sphere;
         centerPoint = returnVals.center;
@@ -89,7 +93,6 @@ PVector inTetrahedron(ArrayList<PVector> points) {
         PVector testPoint = pointsCopy.get(i);
         pointsCopy.remove(i);
         // Test if every determinant has the same sign
-        System.out.println(pointsCopy.size());
         RealMatrix d0Matrix = getDetMatrix(pointsCopy.get(0), pointsCopy.get(1), pointsCopy.get(2), pointsCopy.get(3));
         RealMatrix d1Matrix = getDetMatrix(testPoint, pointsCopy.get(1), pointsCopy.get(2), pointsCopy.get(3));
         RealMatrix d2Matrix = getDetMatrix(pointsCopy.get(0), testPoint, pointsCopy.get(2), pointsCopy.get(3));
@@ -228,7 +231,6 @@ boolean areSameSign(ArrayList<Double> detList) {
             negDet++;
         }
     }
-    System.out.println("negDet" + Integer.toString(negDet));
     if (negDet == 0 || negDet == detList.size()) {
         return true;
     }
@@ -266,8 +268,14 @@ CenterAndSphere getSeparator(ArrayList<PVector> input) {
 
 // Get radius for our separator
 float getRadius(PVector centerPoint, PVector unitVector) {
+    System.out.println("Centerpoint");
+    System.out.println(centerPoint);
+    System.out.println("Centerpoint2D");
     PVector centerPoint2D = new PVector(centerPoint.x, centerPoint.y);
+    System.out.println(centerPoint2D);
+    System.out.println("Numerator.");
     float numerator = (float)Math.sqrt(Math.abs(centerPoint.z - Math.pow(centerPoint2D.mag(), 2)));
+    System.out.println(numerator);
     return numerator / Math.abs(unitVector.z);
 }
 
@@ -277,7 +285,7 @@ float[] getSphereAttr(PVector centerPoint, PVector unitVector, float radius) {
     centerPoint.sub(unitVector);
     sphereCenter = new PVector(centerPoint.x, centerPoint.y, centerPoint.z);
     sphereRadius = radius;
-    float[] attributes = {centerPoint.x, centerPoint.y, radius, radius};
+    float[] attributes = {centerPoint.x, centerPoint.y, 2 * radius, 2 * radius};
     return attributes;
 }
 
@@ -308,42 +316,33 @@ ArrayList<ArrayList<PVector>> samplePoints(ArrayList<PVector> input) {
 
 // Approximate the centerpoint
 PVector approxCenterpoint(ArrayList<PVector> input) {
-	if (input.size() == 0) {
-		System.out.println("You don't have any input points!");
-		return null;
-	}
-	else {
-		while (input.size() > 1) {
-			ArrayList<ArrayList<PVector>> setList = samplePoints(input);
-			ArrayList<PVector> radonList = new ArrayList<PVector>();
-			for (ArrayList<PVector> list : setList) {
-                System.out.println(list.size());
-				PVector radonPoint = getRadonPoint(list);
-				radonList.add(radonPoint);
-			}
-			input = radonList;
+	while (input.size() > 1) {
+		ArrayList<ArrayList<PVector>> setList = samplePoints(input);
+		ArrayList<PVector> radonList = new ArrayList<PVector>();
+		for (ArrayList<PVector> list : setList) {
+			PVector radonPoint = getRadonPoint(list);
+			radonList.add(radonPoint);
 		}
-		return input.get(0);
+		input = radonList;
 	}
+	return input.get(0);
 }
 
 // Draw
 void draw() {
     background(255);
+    // Draw separator sphere projected to 2D
+    if (sphere != null) {
+        strokeWeight(8);
+        stroke(255);
+        shape(sphere);
+    }
     // Draw center point
     if (centerPoint != null) {
         stroke(255, 0, 0);
-        strokeWeight(6);
+        strokeWeight(8);
         point(centerPoint.x, centerPoint.y);
         stroke(0);
-        System.out.println("x-coordinate: " + Float.toString(centerPoint.x));
-        System.out.println("y-coordinate: " + Float.toString(centerPoint.y));
-    }
-    // Draw separator sphere projected to 2D
-    if (sphere != null) {
-        strokeWeight(6);
-        ellipseMode(RADIUS);
-        shape(sphere);
     }
     shape(reset);
     shape(calculate);
@@ -356,21 +355,21 @@ void draw() {
     // Draw input
     for (PVector point : rawInput) {
         strokeWeight(8);
+        stroke(0);
         if (sphereCenter != null) {
-            stroke(0, 0, 255);
-            point(sphereCenter.x, sphereCenter.y);
-            stroke(0);
-            if (point.x >= sphereCenter.x - sphereRadius && point.x <= sphereCenter.x + sphereRadius) {
-                if (point.y >= sphereCenter.y - sphereRadius && point.y <= sphereCenter.y + sphereRadius) {
-                    stroke(0, 255, 0);
-                }
+            float dx = Math.abs(point.x - (sphereCenter.x + sphereRadius));
+            float dy = Math.abs(point.y - (sphereCenter.y + sphereRadius));
+            if (Math.pow(dx, 2) + Math.pow(dy, 2) <= Math.pow(sphereRadius, 2)) {
+                stroke(0, 255, 0);
+                point(point.x, point.y);
             }
-            point(point.x, point.y);
+            else {
+                stroke(0);
+                point(point.x, point.y);
+            }
         }
         else {
-            stroke(0);
             point(point.x, point.y);
-            strokeWeight(2);
         }
     }
 }
