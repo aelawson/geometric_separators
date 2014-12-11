@@ -1,7 +1,7 @@
 Geometric Separators
 ====================
 
-![alt tag](http://imgur.com/e5PkQ4a)
+![alt tag](https://raw.github.uconn.edu/aelawson/geometric_separators/master/images/screenshot.png)
 
 Geometric separators project for CSE 4095 (Computational Geometry).
 
