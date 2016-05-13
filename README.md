@@ -1,7 +1,7 @@
 Geometric Separators
 ====================
 
-[Imgur](http://i.imgur.com/e5PkQ4a.png)
+![Imgur](http://i.imgur.com/e5PkQ4a.png)
 
 This program is based off the paper [Geometric Separators and the Parabolic Lift](http://donsheehy.net/research/sheehy13geometric.pdf) by Don Sheehy. It implements a new algorithm to calculate a geometric separator for a set of 2D input points.
 
